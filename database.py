@@ -52,3 +52,15 @@ def init_database():
 
 if __name__ == "__main__":
     init_database()
+
+def add_patient(last_name, first_name, diagnosis, year):
+    """Добавляет нового пациента в базу данных."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO patients (last_name, first_name, diagnosis, year)
+        VALUES (?, ?, ?, ?)
+    ''', (last_name, first_name, diagnosis, year))
+    conn.commit()
+    conn.close()
+    print(f"Пациент '{last_name} {first_name}' добавлен.")
