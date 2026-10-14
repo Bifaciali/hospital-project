@@ -64,3 +64,21 @@ def add_patient(last_name, first_name, diagnosis, year):
     conn.commit()
     conn.close()
     print(f"Пациент '{last_name} {first_name}' добавлен.")
+
+def add_doctor(last_name, first_name, doctor_card, speciality, phone):
+    """
+    Добавляет нового врача в базу данных.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO doctors (last_name, first_name, doctor_card, speciality, phone)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (last_name, first_name, doctor_card, speciality, phone))
+        conn.commit()
+        print(f"Врач {last_name} {first_name} добавлен.")
+    except sqlite3.IntegrityError:
+        print(f"Ошибка: врач с карточкой {doctor_card} уже существует.")
+    finally:
+        conn.close()
