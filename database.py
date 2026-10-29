@@ -1,14 +1,15 @@
 import sqlite3
-
+import hashlib
 
 DB_PATH = 'hospital.db'
-
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
     return conn
 
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def init_database():
     conn = get_connection()
@@ -49,10 +50,28 @@ def init_database():
     )
     ''')
 
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        role TEXT NOT NULL,
+        doctor_id INTEGER,
+        FOREIGN KEY (doctor_id) REFERENCES doctors (id)
+    )
+    ''')
+
+    cursor.execute("SELECT COUNT(*) FROM users")
+    if cursor.fetchone()[0] == 0:
+        admin_pass = hash_password("admin123")
+        cursor.execute(
+            "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+            ("admin", admin_pass, "admin")
+        )
+        print("Создан пользователь по умолчанию: логин 'admin', пароль 'admin123'")
+
     conn.commit()
     conn.close()
 
-
 if __name__ == '__main__':
     init_database()
-    print(" База данных инициализирована")
